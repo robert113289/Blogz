@@ -2,12 +2,10 @@
 
 {% block content %}
 <h1>Build a Blog</h1>
-<ul>
+
 {% for post in blog_posts %}
-    <li>{{post.title}}<br/>{{post.post}}</li>
-    
-
-
+    <a href="/blog?id={{post.id}}">{{post.title}}</a>
+    <br/>{{post.post}}<br/></br>
 {% endfor %}
-</ul>
+
 {% endblock %}
