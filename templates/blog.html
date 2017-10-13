@@ -4,8 +4,9 @@
 <h1>Build a Blog</h1>
 
 {% for post in blog_posts %}
-    <a href="/blog?id={{post.id}}">{{post.title}}</a>
-    <br/>{{post.post}}<br/></br>
+   <div class="blog_entry"> <a href="/blog?id={{post.id}}">{{post.title}}</a>
+    <br/>{{post.post}}<br/>{{post.pub_date}}</div>
+    
 {% endfor %}
 
 {% endblock %}
