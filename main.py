@@ -4,7 +4,7 @@ from datetime import datetime
 app = Flask(__name__)
 app.config['DEBUG']=True
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://build-a-blog:1234@localhost:8889/build-a-blog'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://Blogz:1234@localhost:8889/Blogz'
 app.config['SQLALCHEMY_ECHO']= True
 db = SQLAlchemy(app)
 
@@ -16,11 +16,25 @@ class Blogs(db.Model):
     title = db.Column(db.String(120))
     post = db.Column(db.String(255))
     pub_date = db.Column(db.DateTime)
+    owner_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
-    def __init__(self,title,post, pub_date=datetime.utcnow()):
+    def __init__(self,title,post,owner,pub_date=datetime.utcnow()):
         self.title = title
         self.post = post
         self.pub_date = pub_date
+        self.owner = owner
+
+class User(db.Model):
+    id= db.Column(db.Integer,primary_key=True,autoincrement=True)
+    username = db.Column(db.String(20),nullable=False)
+    password = db.Column(db.String(20),nullable=False)
+    blogs = db.relationship('Blogs', backref='owner')
+
+    def __init__(self,username,password):
+        self.username = username
+        self.password = password
+        
+
 
 
 @app.route('/blog')
@@ -43,7 +57,7 @@ def new_post():
     if request.method == 'POST':
         title= request.form['new_blog_entry_title']
         post= request.form['new_blog_entry']
-
+        owner = User.query.filter_by(username=session['username']).first()
         if title == "":
             flash("You must enter a title for your blog.")
             return render_template('newpost.html',new_blog_entry=post)
@@ -53,7 +67,7 @@ def new_post():
             return render_template('newpost.html',new_blog_entry_title= title)
         
     
-        new_blog_entry = Blogs(title,post)
+        new_blog_entry = Blogs(title,post,owner)
         db.session.add(new_blog_entry)
         db.session.commit()
         id = new_blog_entry.id
