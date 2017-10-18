@@ -35,6 +35,22 @@ class User(db.Model):
         self.password = password
         
 
+@app.route('/login')
+def login():
+    #if method is get
+        #get username and password from html
+        #if user and password match in database
+            #add username to session
+            #send to /newpost
+        #if user and password dont match
+            #flash('You've entered an incorrect password')
+            #send to /login
+        #if user not in database
+            #flash('Username does not currently exist')
+            #send to /login
+        
+
+    return render_template('login.html')
 
 
 @app.route('/blog')
