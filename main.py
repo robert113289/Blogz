@@ -35,11 +35,20 @@ class User(db.Model):
         self.password = password
         
 
-@app.route('/login')
+@app.route('/login', methods=['POST','GET'])
 def login():
-    #if method is get
-        #get username and password from html
-        #if user and password match in database
+    
+
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+            #if user and password match in database
+        #if username == User.query.filter_by(username=username).first())
+            #print("username matched","*********************************************************")
+            #if password == User.query.password.filter_by(username=username)
+            #flash('user can login')
+            #return render_template(blog.html)
+
             #add username to session
             #send to /newpost
         #if user and password dont match
@@ -48,8 +57,6 @@ def login():
         #if user not in database
             #flash('Username does not currently exist')
             #send to /login
-        
-
     return render_template('login.html')
 
 
