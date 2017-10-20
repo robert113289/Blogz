@@ -35,7 +35,7 @@ class User(db.Model):
         self.password = password
         
 
-@app.route('/login', methods=['POST, GET'])
+@app.route('/login', methods=['POST','GET'])
 def login():
     
 
@@ -64,7 +64,12 @@ def validate():
         username = request.form['username']
         password = request.form['password']
         password2 = request.form['password2']
+        user = User.query.filter_by(username=username).first()
         
+    #username is in the database. redirect to login    
+        if user and user.username == username:
+            flash('The username you entered already exist. Please Login below.')
+            return redirect('/login')
     #username validation
         #username is empty
         if username == "":
@@ -102,56 +107,66 @@ def validate():
             flash("Your passwords do not match")
             return render_template('signup.html',title="Signup Error",username=username)
         
+        #successfull username and password creation
         else:
             new_user = User(username,password)
             db.session.add(new_user)
             db.session.commit()
-            return render_template('newpost.html')
+            session['username'] = user
+            return redirect('/newpost')
 
     return render_template("signup.html")
 
 
-    @app.route('/blog')
-    def blog():
-        id = request.args.get("id")
-        
-        if id is not None:
-            id = int(id)
-            blog = Blogs.query.filter_by(id=id).first()
-            return render_template('singlepost.html',title="Blog",blog=blog)
+@app.route('/blog', methods=['POST','GET'])
+def blog():
+    id = request.args.get("id")
 
-        if id is None:
-            blog_posts = Blogs.query.order_by(Blogs.pub_date.desc())
-            return render_template('blog.html',title="Blog",blog_posts=blog_posts)
+    if id is not None:
+        id = int(id)
+        blog = Blogs.query.filter_by(id=id).first()
+        return render_template('singlepost.html',title="Blog",blog=blog)
 
-    @app.route('/newpost', methods=['POST','GET'])
-    def new_post():
+    if id is None:
+        blog_posts = Blogs.query.order_by(Blogs.pub_date.desc())
+        return render_template('blog.html',title="Blog",blog_posts=blog_posts)
+
+@app.route('/newpost', methods=['POST','GET'])
+def new_post():
         
         
-        if request.method == 'POST':
-            title= request.form['new_blog_entry_title']
-            post= request.form['new_blog_entry']
-            owner = User.query.filter_by(username=session['username']).first()
-            if title == "":
-                flash("You must enter a title for your blog.")
-                return render_template('newpost.html',new_blog_entry=post)
+    if request.method == 'POST':
+        title= request.form['new_blog_entry_title']
+        post= request.form['new_blog_entry']
+        owner = User.query.filter_by(username=session['username']).first()
+        if title == "":
+            flash("You must enter a title for your blog.")
+            return render_template('newpost.html',new_blog_entry=post)
             
-            if post == "":
-                flash("You must add content for your new blog entry")
-                return render_template('newpost.html',new_blog_entry_title= title)
+        if post == "":
+            flash("You must add content for your new blog entry")
+            return render_template('newpost.html',new_blog_entry_title= title)
             
         
-            new_blog_entry = Blogs(title,post,owner)
-            db.session.add(new_blog_entry)
-            db.session.commit()
-            id = new_blog_entry.id
-            id = str(id)
-            blog = Blogs.query.filter_by(id=id).first()
-            return redirect('/blog?id=' + id)
+        new_blog_entry = Blogs(title,post,owner)
+        db.session.add(new_blog_entry)
+        db.session.commit()
+        id = new_blog_entry.id
+        id = str(id)
+        blog = Blogs.query.filter_by(id=id).first()
+        return redirect('/blog?id=' + id)
 
         
 
     return render_template('newpost.html',title="New Post")
+
+@app.route('/logout')
+def logout():
+
+    del session['username']
+    flash('You have been logged out')
+    return render_template('blog.html')
+
 
 if __name__ == '__main__':
     app.run()
