@@ -8,7 +8,12 @@
     <body>
         <nav>
             <span><a href="/blog">Main Blog Page</a></span> <span><a href="/newpost">Add a Blog Entry</a></span>
-
+            {% if session['username'] %}
+            <span><a href="/logout">Logout</a></span> 
+            {% endif %}
+            {% if not session['username'] %}
+            <span><a href="/login">Login</a></span>
+            {% endif %}
         </nav>
         {% with messages = get_flashed_messages() %}
             <ul>

@@ -45,7 +45,7 @@ def login():
         user = User.query.filter_by(username=username).first()
 
         if user and user.password == password: 
-            session['username'] = user
+            session['username'] = username
             return redirect('/newpost')
 
         if user and user.password != password:
