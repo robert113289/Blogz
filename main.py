@@ -35,70 +35,121 @@ class User(db.Model):
         self.password = password
         
 
-@app.route('/login', methods=['POST','GET'])
+@app.route('/login', methods=['POST, GET'])
 def login():
     
 
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-            #if user and password match in database
-        #if username == User.query.filter_by(username=username).first())
-            #print("username matched","*********************************************************")
-            #if password == User.query.password.filter_by(username=username)
-            #flash('user can login')
-            #return render_template(blog.html)
+        user = User.query.filter_by(username=username).first()
 
-            #add username to session
-            #send to /newpost
-        #if user and password dont match
-            #flash('You've entered an incorrect password')
-            #send to /login
-        #if user not in database
-            #flash('Username does not currently exist')
-            #send to /login
-    return render_template('login.html')
+        if user and user.password == password: 
+            session['username'] = user
+            return redirect('/newpost')
 
+        if user and user.password != password:
+            flash("You've entered an incorrect password")
+            return render_template('login.html',username = username)
+        if not user:
+            flash("The username you entered is not currently registered")
+            return render_template('login.html')
+    else:
+        return render_template('login.html')
 
-@app.route('/blog')
-def blog():
-    id = request.args.get("id")
-    
-    if id is not None:
-        id = int(id)
-        blog = Blogs.query.filter_by(id=id).first()
-        return render_template('singlepost.html',title="Blog",blog=blog)
+@app.route("/signup", methods=['POST','GET'])
+def validate():
 
-    if id is None:
-        blog_posts = Blogs.query.order_by(Blogs.pub_date.desc())
-        return render_template('blog.html',title="Blog",blog_posts=blog_posts)
-
-@app.route('/newpost', methods=['POST','GET'])
-def new_post():
-    
-    
     if request.method == 'POST':
-        title= request.form['new_blog_entry_title']
-        post= request.form['new_blog_entry']
-        owner = User.query.filter_by(username=session['username']).first()
-        if title == "":
-            flash("You must enter a title for your blog.")
-            return render_template('newpost.html',new_blog_entry=post)
+        username = request.form['username']
+        password = request.form['password']
+        password2 = request.form['password2']
         
-        if post == "":
-            flash("You must add content for your new blog entry")
-            return render_template('newpost.html',new_blog_entry_title= title)
-        
-    
-        new_blog_entry = Blogs(title,post,owner)
-        db.session.add(new_blog_entry)
-        db.session.commit()
-        id = new_blog_entry.id
-        id = str(id)
-        blog = Blogs.query.filter_by(id=id).first()
-        return redirect('/blog?id=' + id)
+    #username validation
+        #username is empty
+        if username == "":
+            flash("You cannot have an empty username")
+            return render_template('signup.html',title="Signup Error",username=username)
 
-    
+        #username is not the right length
+        if len(username) < 3 or len(username) > 20:
+            flash("Your username has to be atleast 3 characters long but no more than 20")
+            return render_template('signup.html',title="Signup Error",username=username)
+
+        #username has a space
+        if " " in username:
+            flash("You cannot have a space in your username")
+            return render_template('signup.html',title="Signup Error",username=username)
+
+    #password validation
+        #password is empty
+        if password == "":
+            flash("You cannot have an empty password")
+            return render_template('signup.html',title="Signup Error",username=username)
+
+        #password is not the right length
+        if len(password) < 3 or len(password) > 20:
+            flash("Your password has to be atleast 3 characters long but no more than 20")
+            return render_template('signup.html',title="Signup Error",username=username)
+
+        #password has a space
+        if " " in password:
+            flash("You cannot have a space in your username")
+            return render_template('signup.html',title="Signup Error",username=username)
+
+        #passwords do not match
+        if password != password2:
+            flash("Your passwords do not match")
+            return render_template('signup.html',title="Signup Error",username=username)
+        
+        else:
+            new_user = User(username,password)
+            db.session.add(new_user)
+            db.session.commit()
+            return render_template('newpost.html')
+
+    return render_template("signup.html")
+
+
+    @app.route('/blog')
+    def blog():
+        id = request.args.get("id")
+        
+        if id is not None:
+            id = int(id)
+            blog = Blogs.query.filter_by(id=id).first()
+            return render_template('singlepost.html',title="Blog",blog=blog)
+
+        if id is None:
+            blog_posts = Blogs.query.order_by(Blogs.pub_date.desc())
+            return render_template('blog.html',title="Blog",blog_posts=blog_posts)
+
+    @app.route('/newpost', methods=['POST','GET'])
+    def new_post():
+        
+        
+        if request.method == 'POST':
+            title= request.form['new_blog_entry_title']
+            post= request.form['new_blog_entry']
+            owner = User.query.filter_by(username=session['username']).first()
+            if title == "":
+                flash("You must enter a title for your blog.")
+                return render_template('newpost.html',new_blog_entry=post)
+            
+            if post == "":
+                flash("You must add content for your new blog entry")
+                return render_template('newpost.html',new_blog_entry_title= title)
+            
+        
+            new_blog_entry = Blogs(title,post,owner)
+            db.session.add(new_blog_entry)
+            db.session.commit()
+            id = new_blog_entry.id
+            id = str(id)
+            blog = Blogs.query.filter_by(id=id).first()
+            return redirect('/blog?id=' + id)
+
+        
 
     return render_template('newpost.html',title="New Post")
 
