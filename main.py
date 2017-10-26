@@ -33,7 +33,32 @@ class User(db.Model):
     def __init__(self,username,password):
         self.username = username
         self.password = password
-        
+
+
+
+@app.before_request
+def require_login():
+    allowed_routes = ['login','validate','blog','index']
+    if request.endpoint not in allowed_routes and 'username' not in session:
+        flash('You must login first')
+        return redirect('/login')
+
+@app.route('/')
+def index():
+
+    user_id = request.args.get("user")
+    user = User.query.filter_by(id=user_id).first()
+
+    if user_id is not None:
+        user_id = int(user_id)
+        user_blogs = Blogs.query.filter_by(owner_id=user_id)
+        return render_template('userblog.html',title="User Blog",user_blogs=user_blogs,user=user)
+
+    if user_id is None:
+        user_list = User.query.all()
+        return render_template('index.html', user_list=user_list)
+
+    
 
 @app.route('/login', methods=['POST','GET'])
 def login():
@@ -112,7 +137,7 @@ def validate():
             new_user = User(username,password)
             db.session.add(new_user)
             db.session.commit()
-            session['username'] = user
+            session['username'] = username
             return redirect('/newpost')
 
     return render_template("signup.html")

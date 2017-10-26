@@ -5,7 +5,7 @@
 
 {% for post in blog_posts %}
    <div class="blog_entry"> <a href="/blog?id={{post.id}}">{{post.title}}</a>
-    <br/>{{post.post}}<br/>{{post.pub_date}}</div>
+    <br/>{{post.post}}<br/>{{post.pub_date}}<br/><p>Written by: <a href="/?user={{post.owner.id}}">{{post.owner.username}}</p></div>
     
 {% endfor %}
 
