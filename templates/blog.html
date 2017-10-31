@@ -3,10 +3,36 @@
 {% block content %}
 <h1>Build a Blog</h1>
 
-{% for post in blog_posts %}
-   <div class="blog_entry"> <a href="/blog?id={{post.id}}">{{post.title}}</a>
-    <br/>{{post.post}}<br/>{{post.pub_date}}<br/><p>Written by: <a href="/?user={{post.owner.id}}">{{post.owner.username}}</p></div>
-    
+{% for page in blog_posts.iter_pages() %}
+
+    {% if page == blog_posts.page %}
+        {% for post in blog_posts.items %}
+         <div class="blog_entry"> <a href="/blog?id={{post.id}}">{{post.title}}</a>
+        <br/>{{post.post}}<br/>{{post.pub_date}}<br/><p>Written by: <a href="/?user={{post.owner.id}}">{{post.owner.username}}</p></div>
+        {% endfor %}
+    {% endif %}
+
 {% endfor %}
+
+
+{% if blog_posts.has_prev %}
+<span><a href="/blog/page/{{(blog_posts.page - 1)}}">Previous</a></span>
+{% endif %}
+
+{% for page in blog_posts.iter_pages() %}
+
+    
+
+    {% if page != blog_posts.page %}
+    <span><a href="{{ url_for('blog', page=page) }}">{{ page }}</a><span> 
+    {% endif %}
+    
+    
+
+{% endfor %}
+
+{% if blog_posts.has_next %}
+<span><a href="/blog/page/{{(blog_posts.page + 1)}}">Next</a></span>
+{% endif %}
 
 {% endblock %}

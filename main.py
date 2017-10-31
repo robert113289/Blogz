@@ -143,8 +143,9 @@ def validate():
     return render_template("signup.html")
 
 
-@app.route('/blog', methods=['POST','GET'])
-def blog():
+@app.route('/blog', defaults={'page':1}, methods=['POST','GET'])
+@app.route('/blog/page/<int:page>')
+def blog(page):
     id = request.args.get("id")
 
     if id is not None:
@@ -153,7 +154,10 @@ def blog():
         return render_template('singlepost.html',title="Blog",blog=blog)
 
     if id is None:
-        blog_posts = Blogs.query.order_by(Blogs.pub_date.desc())
+        blog_posts = Blogs.query.order_by(Blogs.pub_date.desc()).paginate(page=page, per_page=3, error_out=True)
+        
+        
+        print("blog_posts=",blog_posts,"blog_posts.pages=",blog_posts.pages,"blog_posts.iter_pages()=",blog_posts.iter_pages(),"type(blog_posts.items)=",type(blog_posts.items),"current page=",blog_posts.page,"@@$$%%**************************************************************************************************************")
         return render_template('blog.html',title="Blog",blog_posts=blog_posts)
 
 @app.route('/newpost', methods=['POST','GET'])
